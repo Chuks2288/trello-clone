@@ -1,0 +1,105 @@
+"use client"
+
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { useOrganization, useOrganizationList } from "@clerk/nextjs";
+import { useLocalStorage } from "usehooks-ts"
+
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Accordion } from "@/components/ui/accordion";
+import NavItem, { Organization } from "./navItem";
+
+
+interface SidebarProps {
+    storageKey?: string;
+}
+
+const Sidebar = ({
+    storageKey = "t-sidebar-state"
+}: SidebarProps) => {
+
+    const [expanded, setExpanded] = useLocalStorage<Record<string, any>>(
+        storageKey,
+        {}
+    )
+
+    const {
+        organization: activeOrganization,
+        isLoaded: isLoading
+    } = useOrganization();
+
+    const {
+        userMemberships,
+        isLoaded: isLoadingOrgList
+    } = useOrganizationList({
+        userMemberships: {
+            infinite: true
+        }
+    });
+
+    const defaultAccordionValue: string[] = Object.keys(expanded)
+        .reduce((acc: string[], key: string) => {
+            if (expanded[key]) {
+                acc.push(key)
+            }
+
+            return acc;
+        }, []);
+
+    const onExpand = (id: string) => {
+        setExpanded((curr: any) => ({
+            ...curr,
+            [id]: !expanded[id],
+        }))
+    }
+
+    if (!isLoading || !isLoadingOrgList || userMemberships.isLoading) {
+        return (
+            <>
+                <Skeleton />
+            </>
+        )
+    }
+    return (
+        <>
+            <div className="font-medium text-xs flex items-center mb-1">
+                <span className="pl-4">
+                    Workspaces
+                </span>
+                <Button
+                    asChild
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="ml-auto"
+                >
+                    <Link href="/select-org">
+                        <Plus
+                            className="w-4 h-4"
+                        />
+                    </Link>
+                </Button>
+            </div>
+
+            <Accordion
+                type="multiple"
+                defaultValue={defaultAccordionValue}
+                className="space-y-2"
+            >
+                {userMemberships.data.map(({ organization }) => (
+                    <NavItem
+                        key={organization.id}
+                        isActive={activeOrganization?.id === organization.id}
+                        isExpanded={expanded[organization.id]}
+                        organization={organization as Organization}
+                        onExpand={onExpand}
+                    />
+                ))}
+            </Accordion>
+        </>
+    )
+}
+
+export default Sidebar
