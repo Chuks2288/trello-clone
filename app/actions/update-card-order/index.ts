@@ -8,6 +8,8 @@ import { createSafeAction } from "@/lib/create-safe-action";
 
 import { UpdateCardOrder } from "./schema";
 import { InputType, ReturnType } from "./type";
+import { createAuditLog } from "@/lib/create-audit-log";
+import { ACTION, ENTITY_TYPE } from "@prisma/client";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
     const { userId, orgId } = auth();
@@ -40,6 +42,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         );
 
         updatedCards = await db.$transaction(transaction);
+
     } catch (error) {
         return {
             error: "Failed to reorder."

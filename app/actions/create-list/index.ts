@@ -7,6 +7,8 @@ import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { createSafeAction } from "@/lib/create-safe-action";
 import { CreateList } from "./schema";
+import { createAuditLog } from "@/lib/create-audit-log";
+import { ACTION, ENTITY_TYPE } from "@prisma/client";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
 
@@ -50,6 +52,13 @@ const handler = async (data: InputType): Promise<ReturnType> => {
                 order: newOrder,
             }
         });
+
+        await createAuditLog({
+            entityTitle: list.title,
+            entityId: list.id,
+            entityType: ENTITY_TYPE.LIST,
+            action: ACTION.CREATE
+        })
     } catch (error) {
         return {
             error: "Failed to create"
