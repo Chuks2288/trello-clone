@@ -151,12 +151,12 @@ export const ListContainer = ({
                 // Add card to the destination list
                 destList.cards.splice(destination.index, 0, movedCard);
 
-                sourceList.cards.forEach((card: CardWithList, idx) => {
+                sourceList.cards.forEach((card: CardWithList, idx: any) => {
                     card.order = idx;
                 });
 
                 // Update the order for each card in the destination list
-                destList.cards.forEach((card, idx) => {
+                destList.cards.forEach((card: CardWithList, idx: any) => {
                     card.order = idx;
                 });
 
